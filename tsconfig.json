@@ -1,11 +1,16 @@
 {
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"noImplicitAny": true,
-		"module": "es6",
-		"target": "es2015",
 		"allowJs": true,
-		"sourceMap": true
+		"lib": [
+			"es2015",
+			"dom"
+		],
+		"module": "commonjs",
+		"noImplicitAny": true,
+		"outDir": "./dist/",
+		"removeComments": true,
+		"sourceMap": true,
+		"target": "es5"
 	},
 	"exclude": [
 		"node_modules"
