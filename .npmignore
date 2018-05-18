@@ -2,6 +2,14 @@
 *.log
 npm-debug.log*
 
+# Tests
+tests
+
 # IDEs
 .vscode
 .idea
+
+# Other not needed files
+.editorconfig
+tsconfig.json
+index.ts

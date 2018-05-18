@@ -7,7 +7,7 @@
 		],
 		"module": "commonjs",
 		"noImplicitAny": true,
-		"outDir": "./dist/",
+		"outDir": "./src/",
 		"removeComments": true,
 		"sourceMap": true,
 		"target": "es5"

@@ -121,7 +121,7 @@ class LineReader {
 	 * @param {string} eventName
 	 * @param {Function} callback
 	 */
-	private on(eventName: string, callback: Function) {
+	private on(eventName: string, callback: Function) : void {
 		this.events.set(eventName, callback);
 	};
 
@@ -130,11 +130,9 @@ class LineReader {
 	 * @param {string} eventName The name of the event to emit
 	 * @param {string} [prop] String property to pass through with the called event
 	 */
-	private emit(eventName: string, prop: string = '') {
+	private emit(eventName: string, prop: string = '') : void {
 		this.events.get(eventName).call(this, prop);
 	};
 }
 
-export {
-	LineReader as default,
-};
+export default LineReader;

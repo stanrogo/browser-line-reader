@@ -10,4 +10,5 @@ node_modules/
 .idea
 
 # Build output
-dist
+src/**/*.js
+src**/*.js.map
