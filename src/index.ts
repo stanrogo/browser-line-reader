@@ -2,18 +2,18 @@
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
  * @author Stanley Clark<me@stanrogo.com>
- * @version 1.0.0
+ * @version 0.0.1
  */
 
 class LineReader {
-	private static chunkSize: number = 1024;        // Chunk size to use for reading
+	private static readonly chunkSize: number = 1024;	// Chunk size to use for reading
 
-	private readonly fileReader: FileReader;        // Single file reader instance
-	private readonly file: File;                    // The file to read
-	private readonly events: Map<string, Function>; // Array of events to call
-	private readPosition: number;                   // Position of read head
-	private chunk: string;                          // Current chunk text contents
-	private lines: string[];                        // Array of current lines read
+	private readonly fileReader: FileReader;        	// Single file reader instance
+	private readonly file: File;                    	// The file to read
+	private readonly events: Map<string, Function>; 	// Array of events to call
+	private readPosition: number;                   	// Position of read head
+	private chunk: string;                          	// Current chunk text contents
+	private lines: string[];                        	// Array of current lines read
 
 	constructor(file: File) {
 		this.fileReader = new FileReader();
@@ -24,24 +24,25 @@ class LineReader {
 		this.events = new Map<string, Function>();
 
 		// Attach events to the file reader
-		this.fileReader.onerror = () => {
-			this.emit('error', [this.fileReader.error.message]);
-		};
-		this.fileReader.onload = this.onLoad.bind(this);
+		this.fileReader.onerror = () => this.emit('error', this.fileReader.error.message);
+		this.fileReader.onload = () => this.onLoad();
 	}
 
 	/**
 	 * Read all lines of the file and return when complete
-	 * @param {Function} callback Function to execute on every line read
-	 * @returns {Promise<void|string>}
+	 * @param {Function} [callback] Function to execute on every line read
+	 * @returns {Promise<number | string>}
 	 */
-	public readLines(callback: Function): Promise<void | string> {
+	public readLines(callback?: Function): Promise<number | string> {
+		let count: number = 0;
+
 		return new Promise((resolve: Function, reject: Function) => {
 			this.on('line', (line: string) => {
-				callback(line);
+				if(typeof callback === "function") callback(line);
+				count++;
 				this.step();
 			});
-			this.on('end', resolve);
+			this.on('end', () => resolve(count));
 			this.on('error', reject);
 			this.read();
 		});
@@ -72,7 +73,7 @@ class LineReader {
 
 		// If there is no data left to read, but there is still data stored in 'chunk',
 		// emit it as a line
-		if (this.chunk.length) return this.emit('line', [this.chunk]);
+		if (this.chunk.length) return this.emit('line', this.chunk);
 
 		// If there is no data stored in 'chunk', emit the end event
 		this.emit('end');
@@ -103,7 +104,7 @@ class LineReader {
 		} else if (this.lines.length === 0 && !this.hasMoreData()) {
 			this.emit('end');
 		} else {
-			this.emit('line', [this.lines.shift()]);
+			this.emit('line', this.lines.shift());
 		}
 	}
 
@@ -126,12 +127,14 @@ class LineReader {
 
 	/**
 	 * Emit event
-	 * @param {string} eventName
-	 * @param {string[]} args
+	 * @param {string} eventName The name of the event to emit
+	 * @param {string} [prop] String property to pass through with the called event
 	 */
-	private emit(eventName: string, args ?: string[]) {
-		this.events.get(eventName).apply(this, args);
+	private emit(eventName: string, prop: string = '') {
+		this.events.get(eventName).call(this, prop);
 	};
 }
 
-export default LineReader;
+export {
+	LineReader as default,
+};
