@@ -1,0 +1,7 @@
+# Logs
+*.log
+npm-debug.log*
+
+# IDEs
+.vscode
+.idea
