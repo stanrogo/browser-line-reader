@@ -2,7 +2,7 @@
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
  * @author Stanley Clark<me@stanrogo.com>
- * @version 0.0.1
+ * @version 0.0.7
  */
 
 class LineReader {
