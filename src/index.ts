@@ -79,7 +79,7 @@ class LineReader {
 
 		// If there is no data left to read, but there is still data stored in 'chunk',
 		// emit it as a line
-		if (this.chunk.length) return this.emit('line', this.chunk);
+		if (this.chunk.length) return this.emit('lines', [this.chunk]);
 
 		// If there is no data stored in 'chunk', emit the end event
 		this.emit('end');
