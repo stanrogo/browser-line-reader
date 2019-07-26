@@ -6,14 +6,14 @@
  */
 
 class LineReader {
-	private static readonly chunkSize: number = 1024;	// Chunk size to use for reading
+	private static readonly chunkSize: number = 128 * 1024;		// Chunk size to use for reading
 
-	private readonly fileReader: FileReader;        	// Single file reader instance
-	private readonly file: File;                    	// The file to read
-	private readonly events: Map<string, Function>; 	// Array of events to call
-	private readPosition: number;                   	// Position of read head
-	private chunk: string;                          	// Current chunk text contents
-	private lines: string[];                        	// Array of current lines read
+	private readonly fileReader: FileReader;        			// Single file reader instance
+	private readonly file: File;                    			// The file to read
+	private readonly events: Map<string, Function>; 			// Array of events to call
+	private readPosition: number;                   			// Position of read head
+	private chunk: string;                          			// Current chunk text contents
+	private lines: string[];                        			// Array of current lines read
 
 	constructor(file: File) {
 		this.fileReader = new FileReader();
@@ -37,9 +37,15 @@ class LineReader {
 		let count: number = 0;
 
 		return new Promise((resolve: Function, reject: Function) => {
-			this.on('line', (line: string) => {
-				if(typeof callback === "function") callback(line);
-				count++;
+			this.on('lines', (lines: string[]) => {
+				let size = lines.length;
+				if (typeof callback === "function") {
+					let index: number = -1;
+					while (++index < size) {
+						callback(lines[index]);
+					}
+				}
+				count += size;
 				this.step();
 			});
 			this.on('end', () => resolve(count));
@@ -73,7 +79,7 @@ class LineReader {
 
 		// If there is no data left to read, but there is still data stored in 'chunk',
 		// emit it as a line
-		if (this.chunk.length) return this.emit('line', this.chunk);
+		if (this.chunk.length) return this.emit('lines', [this.chunk]);
 
 		// If there is no data stored in 'chunk', emit the end event
 		this.emit('end');
@@ -104,7 +110,7 @@ class LineReader {
 		} else if (this.lines.length === 0 && !this.hasMoreData()) {
 			this.emit('end');
 		} else {
-			this.emit('line', this.lines.shift());
+			this.emit('lines', this.lines.splice(0));
 		}
 	}
 
@@ -130,7 +136,7 @@ class LineReader {
 	 * @param {string} eventName The name of the event to emit
 	 * @param {string} [prop] String property to pass through with the called event
 	 */
-	private emit(eventName: string, prop: string = '') : void {
+	private emit(eventName: string, prop: string[] | string = '') : void {
 		this.events.get(eventName).call(this, prop);
 	};
 }
