@@ -1,6 +1,6 @@
 {
 	"name": "browser-line-reader",
-	"version": "0.0.1",
+	"version": "0.0.8",
 	"description": "A line by line async file reader for the browser",
 	"main": "./src/index.js",
 	"types": "./src/index.d.ts",
@@ -28,10 +28,10 @@
 	},
 	"homepage": "https://github.com/stanrogo/browser-line-reader#readme",
 	"devDependencies": {
-		"@types/jest": "^22.2.3",
-		"jest": "^22.4.4",
-		"ts-jest": "^22.4.6",
-		"typescript": "^2.8.3"
+		"@types/jest": "^24.0.15",
+		"jest": "^24.8.0",
+		"ts-jest": "^24.0.2",
+		"typescript": "^3.5.3"
 	},
 	"jest": {
 		"transform": {
