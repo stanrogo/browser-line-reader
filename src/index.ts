@@ -1,21 +1,19 @@
 /**
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
- * @author Stanley Clark<me@stanrogo.com>
- * @version 0.0.7
  */
 
 class LineReader {
-	private static readonly chunkSize: number = 128 * 1024;		// Chunk size to use for reading
+	private static readonly chunkSize: number = 128 * 1024; // Chunk size to use for reading
 
-	private readonly fileReader: FileReader;        			// Single file reader instance
-	private readonly file: File;                    			// The file to read
-	private readonly events: Map<string, Function>; 			// Array of events to call
-	private readPosition: number;                   			// Position of read head
-	private chunk: string;                          			// Current chunk text contents
-	private lines: string[];                        			// Array of current lines read
+	private readonly fileReader: FileReader; // Single file reader instance
+	private readonly file: File; // The file to read
+	private readonly events: Map<string, Function>; // Array of events to call
+	private readPosition: number; // Position of read head
+	private chunk: string; // Current chunk text contents
+	private lines: string[]; // Array of current lines read
 
-	constructor(file: File) {
+	public constructor(file: File) {
 		this.fileReader = new FileReader();
 		this.readPosition = 0;
 		this.chunk = '';
@@ -24,8 +22,8 @@ class LineReader {
 		this.events = new Map<string, Function>();
 
 		// Attach events to the file reader
-		this.fileReader.onerror = () => this.emit('error', this.fileReader.error.message);
-		this.fileReader.onload = () => this.onLoad();
+		this.fileReader.onerror = (): void => this.emit('error', this.fileReader.error.message);
+		this.fileReader.onload = (): void => this.onLoad();
 	}
 
 	/**
@@ -34,13 +32,13 @@ class LineReader {
 	 * @returns {Promise<number | string>}
 	 */
 	public readLines(callback?: Function): Promise<number | string> {
-		let count: number = 0;
+		let count = 0;
 
-		return new Promise((resolve: Function, reject: Function) => {
-			this.on('lines', (lines: string[]) => {
+		return new Promise((resolve: Function, reject: Function): void => {
+			this.on('lines', (lines: string[]): void => {
 				let size = lines.length;
-				if (typeof callback === "function") {
-					let index: number = -1;
+				if (typeof callback === 'function') {
+					let index = -1;
 					while (++index < size) {
 						callback(lines[index]);
 					}
@@ -48,7 +46,7 @@ class LineReader {
 				count += size;
 				this.step();
 			});
-			this.on('end', () => resolve(count));
+			this.on('end', (): void => resolve(count));
 			this.on('error', reject);
 			this.read();
 		});
@@ -120,25 +118,25 @@ class LineReader {
 	 */
 	private hasMoreData(): boolean {
 		return this.readPosition <= this.file.size;
-	};
+	}
 
 	/**
 	 * Subscribe to event
 	 * @param {string} eventName
 	 * @param {Function} callback
 	 */
-	private on(eventName: string, callback: Function) : void {
+	private on(eventName: string, callback: Function): void {
 		this.events.set(eventName, callback);
-	};
+	}
 
 	/**
 	 * Emit event
 	 * @param {string} eventName The name of the event to emit
 	 * @param {string} [prop] String property to pass through with the called event
 	 */
-	private emit(eventName: string, prop: string[] | string = '') : void {
+	private emit(eventName: string, prop: string[] | string = ''): void {
 		this.events.get(eventName).call(this, prop);
-	};
+	}
 }
 
 export default LineReader;
