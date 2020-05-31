@@ -2,6 +2,7 @@
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
  */
+import {Options} from './interfaces';
 
 class LineReader {
 	private static readonly chunkSize: number = 128 * 1024; // Chunk size to use for reading
@@ -12,14 +13,17 @@ class LineReader {
 	private readPosition: number; // Position of read head
 	private chunk: string; // Current chunk text contents
 	private lines: string[]; // Array of current lines read
+	private options: Options; // Options
 
-	public constructor(file: File) {
+	public constructor(file: File, options: Options={}) {
 		this.fileReader = new FileReader();
 		this.readPosition = 0;
 		this.chunk = '';
 		this.lines = [];
 		this.file = file;
 		this.events = new Map<string, Function>();
+		if (!options.encoding) options.encoding = 'UTF-8'
+		this.options = options;
 
 		// Attach events to the file reader
 		this.fileReader.onerror = (): void => this.emit('error', this.fileReader.error.message);
@@ -92,7 +96,7 @@ class LineReader {
 		// Update current read position
 		this.readPosition += LineReader.chunkSize;
 		// Read the blob as text
-		this.fileReader.readAsText(blob);
+		this.fileReader.readAsText(blob, this.options.encoding);
 	}
 
 	/**
