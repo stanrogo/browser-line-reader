@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 /**
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
+ * TODO: specify concrete accepted function types
  */
 
 class LineReader {
@@ -36,7 +39,7 @@ class LineReader {
 
 		return new Promise((resolve: Function, reject: Function): void => {
 			this.on('lines', (lines: string[]): void => {
-				let size = lines.length;
+				const size = lines.length;
 				if (typeof callback === 'function') {
 					let index = -1;
 					while (++index < size) {
