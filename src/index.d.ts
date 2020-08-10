@@ -1,7 +1,8 @@
 // Type definitions for browser-line-reader 0.02
 // Project: browser-line-reader
 // Definitions by: Stanley Clark <me@stanrogo.com>
-import {Options} from './interfaces';
+
+import { Options } from './interfaces';
 
 declare class LineReader {
 	constructor(file: File, options: Options);
