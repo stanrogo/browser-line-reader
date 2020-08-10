@@ -1,6 +1,6 @@
 {
 	"name": "browser-line-reader",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "A line by line async file reader for the browser",
 	"main": "./src/index.js",
 	"types": "./src/index.d.ts",
