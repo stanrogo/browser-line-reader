@@ -54,7 +54,6 @@ There are a number of items I would still like to implement.
 This list is growing and feel free to send me suggestions if you
 find this tool useful.
 
-- Support for different file encodings
 - Support for different kinds of line separators
 - Support for separate read header action
 - Support for reading a certain number of lines

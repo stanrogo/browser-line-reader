@@ -2,8 +2,10 @@
 // Project: browser-line-reader
 // Definitions by: Stanley Clark <me@stanrogo.com>
 
+import { Options } from './interfaces';
+
 declare class LineReader {
-	constructor(file: File);
+	constructor(file: File, options: Options);
 
 	private static readonly chunkSize: number;
 	private readonly fileReader: FileReader;
