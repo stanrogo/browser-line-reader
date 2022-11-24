@@ -7,7 +7,10 @@
 	"scripts": {
 		"test": "jest",
 		"build": "tsc",
-		"prepare": "npm run build"
+		"prepare": "husky install && npm run build"
+	},
+	"engines": {
+		"node": ">= 12.22"
 	},
 	"repository": {
 		"type": "git",
@@ -37,22 +40,15 @@
 		"husky": "^8.0.2",
 		"jest": "^29.3.1",
 		"lint-staged": "^13.0.3",
+		"ls-engines": "^0.7.0",
 		"prettier": "^2.8.0",
 		"ts-jest": "^29.0.3",
 		"typescript": "^4.9.3"
 	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
 	"lint-staged": {
-		"*.ts": [
+		"*.{js,ts}": [
 			"eslint --fix",
-			"git add"
-		],
-		"*.js": [
-			"eslint --fix",
+			"prettier --write",
 			"git add"
 		]
 	},
