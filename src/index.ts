@@ -6,7 +6,7 @@
  * TODO: specify concrete accepted function types
  */
 
-import { Options } from './interfaces';
+import { LineReaderCallback, Options } from './interfaces';
 
 class LineReader {
 	private static readonly chunkSize: number = 128 * 1024; // Chunk size to use for reading
@@ -35,22 +35,40 @@ class LineReader {
 
 	/**
 	 * Read all lines of the file and return when complete
-	 * @param {Function} [callback] Function to execute on every line read
-	 * @returns {Promise<number | string>}
+	 * @param {LineReaderCallback} [callback] Function to execute on every line read
+	 * @returns {Promise<number>}
 	 */
-	public readLines(callback?: Function): Promise<number | string> {
+	public readLines(callback?: LineReaderCallback): Promise<number> {
+		return this.readNLines(-1, callback);
+	}
+
+	/**
+	 * Read the first n lines of the file and return when complete.
+	 * If n is larger than the number of lines in the file then all lines will
+	 * be read.
+	 * If n is less than 0, then all lines will be read.
+	 *
+	 * @param {number} nLines The number of lines to be read
+	 * @param {LineReaderCallback} [callback] Function to execute on every line read
+	 * @returns {Promise<number>}
+	 */
+	public readNLines(nLines: number, callback?: LineReaderCallback): Promise<number> {
 		let count = 0;
 
-		return new Promise((resolve: Function, reject: Function): void => {
+		return new Promise((resolve, reject): void => {
 			this.on('lines', (lines: string[]): void => {
 				const size = lines.length;
-				if (typeof callback === 'function') {
-					let index = -1;
-					while (++index < size) {
+				let index = -1;
+				while (++index < size && (count < nLines || nLines < 0)) {
+					count++;
+					if (typeof callback === 'function') {
 						callback(lines[index]);
 					}
 				}
-				count += size;
+				if (count === nLines) {
+					this.emit('end');
+				}
+
 				this.step();
 			});
 			this.on('end', (): void => resolve(count));
