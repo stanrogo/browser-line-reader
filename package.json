@@ -1,6 +1,6 @@
 {
 	"name": "browser-line-reader",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "A line by line async file reader for the browser",
 	"main": "./src/index.js",
 	"types": "./src/index.d.ts",
@@ -31,20 +31,20 @@
 	},
 	"homepage": "https://github.com/stanrogo/browser-line-reader#readme",
 	"devDependencies": {
-		"@types/jest": "^29.2.3",
-		"@typescript-eslint/eslint-plugin": "^5.44.0",
-		"@typescript-eslint/parser": "^5.44.0",
-		"eslint": "^8.28.0",
-		"eslint-config-prettier": "^8.5.0",
+		"@types/jest": "^29.5.1",
+		"@typescript-eslint/eslint-plugin": "^5.59.7",
+		"@typescript-eslint/parser": "^5.59.7",
+		"eslint": "^8.41.0",
+		"eslint-config-prettier": "^8.8.0",
 		"eslint-plugin-prettier": "^4.2.1",
-		"husky": "^8.0.2",
-		"jest": "^29.3.1",
-		"jest-environment-jsdom": "^29.3.1",
-		"lint-staged": "^13.0.3",
-		"ls-engines": "^0.7.0",
-		"prettier": "^2.8.0",
-		"ts-jest": "^29.0.3",
-		"typescript": "^4.9.3"
+		"husky": "^8.0.3",
+		"jest": "^29.5.0",
+		"jest-environment-jsdom": "^29.5.0",
+		"lint-staged": "^13.2.2",
+		"ls-engines": "^0.9.0",
+		"prettier": "^2.8.8",
+		"ts-jest": "^29.1.0",
+		"typescript": "^5.0.4"
 	},
 	"lint-staged": {
 		"*.{js,ts}": [
