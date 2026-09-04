@@ -1,19 +1,17 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 /**
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
  * TODO: specify concrete accepted function types
  */
 
-import { LineReaderCallback, Options } from './interfaces';
+import { LineReaderCallback, Options } from './interfaces.js';
 
-class LineReader {
+export class LineReader {
 	private static readonly chunkSize: number = 128 * 1024; // Chunk size to use for reading
 
 	private readonly fileReader: FileReader; // Single file reader instance
 	private readonly file: File; // The file to read
-	private readonly events: Map<string, Function>; // Array of events to call
+	private readonly events: Map<string, (prop: string[] | string) => void>; // Array of events to call
 	private readPosition: number; // Position of read head
 	private chunk: string; // Current chunk text contents
 	private lines: string[]; // Array of current lines read
@@ -25,11 +23,12 @@ class LineReader {
 		this.chunk = '';
 		this.lines = [];
 		this.file = file;
-		this.events = new Map<string, Function>();
+		this.events = new Map<string, (prop: string[] | string) => void>();
 		this.options = options;
 
 		// Attach events to the file reader
-		this.fileReader.onerror = (): void => this.emit('error', this.fileReader.error.message);
+		this.fileReader.onerror = (): void =>
+			this.emit('error', this.fileReader.error?.message ?? 'Unknown FileReader error');
 		this.fileReader.onload = (): void => this.onLoad();
 	}
 
@@ -56,7 +55,9 @@ class LineReader {
 		let count = 0;
 
 		return new Promise((resolve, reject): void => {
-			this.on('lines', (lines: string[]): void => {
+			this.on('lines', (lines: string[] | string): void => {
+				if (typeof lines === 'string') return;
+
 				const size = lines.length;
 				let index = -1;
 				while (++index < size && (count < nLines || nLines < 0)) {
@@ -90,7 +91,7 @@ class LineReader {
 			this.lines = this.chunk.split('\n');
 
 			// If there is still more data to read, save the last line, as it may be incomplete
-			if (this.hasMoreData()) this.chunk = this.lines.pop();
+			if (this.hasMoreData()) this.chunk = this.lines.pop() ?? '';
 
 			// Start stepping through each line
 			this.step();
@@ -150,7 +151,7 @@ class LineReader {
 	 * @param {string} eventName
 	 * @param {Function} callback
 	 */
-	private on(eventName: string, callback: Function): void {
+	private on(eventName: string, callback: (prop: string[] | string) => void): void {
 		this.events.set(eventName, callback);
 	}
 
@@ -160,8 +161,7 @@ class LineReader {
 	 * @param {string} [prop] String property to pass through with the called event
 	 */
 	private emit(eventName: string, prop: string[] | string = ''): void {
-		this.events.get(eventName).call(this, prop);
+		const callback = this.events.get(eventName);
+		if (callback) callback.call(this, prop);
 	}
 }
-
-export default LineReader;

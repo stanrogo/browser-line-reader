@@ -27,10 +27,16 @@ interface Options {
 type LineReaderCallback = (line: string) => void;
 ```
 
-To get started, import the `LineReader` class as a default export.
+To get started, import the named `LineReader` export.
 
 ```typescript
-import LineReader from 'browser-line-reader';
+import { LineReader } from 'browser-line-reader';
+```
+
+CommonJS consumers can use the same named export:
+
+```javascript
+const { LineReader } = require('browser-line-reader');
 ```
 
 ### constructor
@@ -78,8 +84,28 @@ lineReader.readNLines(10, (line: string) => {
 
 - Support for different kinds of line separators
 - Support for separate read header action
-- Efficiency optimisations
+- Efficiency optimisationss
 - Benchmarking against standard FileReader API
 - Add contributing guidelines
 
 Please suggest or implement these or any other features you feel are missing.
+
+## Publishing a release
+
+The publish workflow publishes to npm and creates a GitHub release whenever a version tag is pushed. Configure an `NPM_TOKEN` repository secret with permission to publish this package before using it.
+
+1. Update the version, commit the generated package metadata, and create a matching tag:
+
+```sh
+npm version patch
+```
+
+Use `minor` or `major` instead of `patch` when appropriate.
+
+2. Push the commit and tag:
+
+```sh
+git push origin HEAD --follow-tags
+```
+
+The `v*` tag starts `.github/workflows/publish.yml`. It installs the dependencies, builds and publishes the package to npm, then creates a GitHub release for the tag with automatically generated release notes. The workflow uses the repository's built-in `GITHUB_TOKEN` for the release and the `NPM_TOKEN` secret for npm authentication.

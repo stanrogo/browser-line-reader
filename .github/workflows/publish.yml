@@ -1,18 +1,26 @@
-name: Publish Package to npmjs
+name: Publish package and create GitHub release
 on:
-    release:
-        types: [published]
+    push:
+        tags:
+            - 'v*'
 jobs:
-    build:
+    publish:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
         steps:
-            - uses: actions/checkout@v3
-            # Setup .npmrc file to publish to npm
-            - uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
-                  node-version: '16.x'
+                  node-version: '22.x'
                   registry-url: 'https://registry.npmjs.org'
-            - run: npm ci
+            - run: npm ci --ignore-scripts
+            - run: npx eslint src tests
+            - run: npm test -- --runInBand
             - run: npm publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - name: Create GitHub release
+              run: gh release create "$GITHUB_REF_NAME" --generate-notes
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

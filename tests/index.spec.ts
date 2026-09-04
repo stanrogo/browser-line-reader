@@ -1,4 +1,4 @@
-import { default as LineReader } from '../src/index';
+import { LineReader } from '../src/index';
 import standardFile from './input/standard';
 import emptyFile from './input/empty';
 import smallFile from './input/small';

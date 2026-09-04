@@ -1,21 +1,24 @@
 {
 	"compilerOptions": {
-		"allowJs": true,
+		"declaration": true,
+		"declarationMap": true,
 		"lib": [
 			"es2015",
 			"dom"
 		],
 		"module": "commonjs",
-		"noImplicitAny": true,
-		"outDir": "./src/",
+		"outDir": "./dist/cjs/",
 		"removeComments": true,
+		"rootDir": "./src/",
+		"skipLibCheck": true,
+		"strict": true,
 		"sourceMap": true,
-		"target": "es5"
+		"target": "es2015"
 	},
 	"exclude": [
 		"node_modules"
 	],
 	"include": [
-		"src/*.ts"
+		"src/**/*.ts"
 	]
 }
