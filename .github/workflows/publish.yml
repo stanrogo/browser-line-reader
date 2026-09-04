@@ -8,18 +8,17 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
+            id-token: write
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
               with:
-                  node-version: '22.x'
+                  node-version: '26.x'
                   registry-url: 'https://registry.npmjs.org'
             - run: npm ci --ignore-scripts
             - run: npx eslint src tests
             - run: npm test -- --runInBand
-            - run: npm publish
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            - run: npm stage publish
             - name: Create GitHub release
               run: gh release create "$GITHUB_REF_NAME" --generate-notes
               env:

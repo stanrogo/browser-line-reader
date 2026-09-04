@@ -92,7 +92,16 @@ Please suggest or implement these or any other features you feel are missing.
 
 ## Publishing a release
 
-The publish workflow publishes to npm and creates a GitHub release whenever a version tag is pushed. Configure an `NPM_TOKEN` repository secret with permission to publish this package before using it.
+The publish workflow publishes to npm and creates a GitHub release whenever a version tag is pushed. It uses npm trusted publishing, so no long-lived npm token is stored in GitHub.
+
+Before the first release, open the package's **Settings** page on npmjs.com, select **Trusted Publisher**, choose **GitHub Actions**, and enter:
+
+- Organization or user: `stanrogo`
+- Repository: `browser-line-reader`
+- Workflow filename: `publish.yml`
+- Environment: leave blank
+
+Allow `npm stage publish` for this trusted publisher, but do not allow direct `npm publish`. The workflow's `id-token: write` permission lets npm authenticate it with a short-lived GitHub OIDC credential.
 
 1. Update the version, commit the generated package metadata, and create a matching tag:
 
@@ -108,4 +117,10 @@ Use `minor` or `major` instead of `patch` when appropriate.
 git push origin HEAD --follow-tags
 ```
 
-The `v*` tag starts `.github/workflows/publish.yml`. It installs the dependencies, builds and publishes the package to npm, then creates a GitHub release for the tag with automatically generated release notes. The workflow uses the repository's built-in `GITHUB_TOKEN` for the release and the `NPM_TOKEN` secret for npm authentication.
+The `v*` tag starts `.github/workflows/publish.yml`. It installs the dependencies, runs lint and tests, builds, and stages the package on npm, then creates a GitHub release for the tag with automatically generated release notes. The workflow uses short-lived OIDC authentication for npm and the repository's built-in `GITHUB_TOKEN` for the release.
+
+After the workflow succeeds, review the staged package on npmjs.com or with `npm stage view <stage-id>`. Approve it with 2FA to make it live:
+
+```sh
+npm stage approve <stage-id>
+```
