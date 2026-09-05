@@ -1,7 +1,6 @@
 /**
  * @file index.ts
  * @description Utility to read lines from files, without having to load the entire file into memory
- * TODO: specify concrete accepted function types
  */
 
 import { LineReaderCallback, Options } from './interfaces.js';
@@ -12,24 +11,32 @@ export class LineReader {
 	private readonly fileReader: FileReader; // Single file reader instance
 	private readonly file: File; // The file to read
 	private readonly events: Map<string, (prop: string[] | string) => void>; // Array of events to call
+	private decoder: TextDecoder;
 	private readPosition: number; // Position of read head
 	private chunk: string; // Current chunk text contents
 	private lines: string[]; // Array of current lines read
-	private options: Options; // Options
+	private reading: boolean;
 
-	public constructor(file: File, options: Options = { encoding: 'UTF-8' }) {
+	public constructor(file: File, options: Options = { encoding: 'utf-8' }) {
 		this.fileReader = new FileReader();
 		this.readPosition = 0;
-		this.chunk = '';
-		this.lines = [];
 		this.file = file;
 		this.events = new Map<string, (prop: string[] | string) => void>();
-		this.options = options;
+		this.decoder = new TextDecoder(options.encoding ?? 'utf-8');
+		this.chunk = '';
+		this.lines = [];
+		this.reading = false;
 
 		// Attach events to the file reader
 		this.fileReader.onerror = (): void =>
 			this.emit('error', this.fileReader.error?.message ?? 'Unknown FileReader error');
-		this.fileReader.onload = (): void => this.onLoad();
+		this.fileReader.onload = (): void => {
+			try {
+				this.onLoad();
+			} catch (error) {
+				this.emit('error', error instanceof Error ? error.message : String(error));
+			}
+		};
 	}
 
 	/**
@@ -52,29 +59,47 @@ export class LineReader {
 	 * @returns {Promise<number>}
 	 */
 	public readNLines(nLines: number, callback?: LineReaderCallback): Promise<number> {
+		if (this.reading) return Promise.reject(new Error('A read is already in progress'));
+		if (nLines === 0) return Promise.resolve(0);
 		let count = 0;
 
 		return new Promise((resolve, reject): void => {
+			this.reading = true;
+			this.readPosition = 0;
+			this.chunk = '';
+			this.lines = [];
 			this.on('lines', (lines: string[] | string): void => {
 				if (typeof lines === 'string') return;
-
-				const size = lines.length;
-				let index = -1;
-				while (++index < size && (count < nLines || nLines < 0)) {
+				for (const line of lines) {
+					if (nLines >= 0 && count >= nLines) {
+						this.emit('end');
+						return;
+					}
+					callback?.(line);
 					count++;
-					if (typeof callback === 'function') {
-						callback(lines[index]);
+					if (count === nLines) {
+						this.emit('end');
+						return;
 					}
 				}
-				if (count === nLines) {
-					this.emit('end');
-				}
-
 				this.step();
 			});
-			this.on('end', (): void => resolve(count));
-			this.on('error', reject);
-			this.read();
+			this.on('end', (): void => {
+				this.reading = false;
+				this.events.clear();
+				resolve(count);
+			});
+			this.on('error', (error: string[] | string): void => {
+				this.reading = false;
+				this.events.clear();
+				reject(new Error(String(error)));
+			});
+
+			try {
+				this.read();
+			} catch (error) {
+				this.emit('error', String(error));
+			}
 		});
 	}
 
@@ -83,20 +108,29 @@ export class LineReader {
 	 */
 	private onLoad(): void {
 		// Store the processed text by appending it to any existing processed text
-		this.chunk += this.fileReader.result;
+		const hasMoreData = this.hasMoreData();
+		this.chunk += this.decoder.decode(new Uint8Array(this.fileReader.result as ArrayBuffer), {
+			stream: hasMoreData,
+		});
 
 		// If the processed text contains a newline character
-		if (/\n/.test(this.chunk)) {
-			// Split the text into an array of lines
-			this.lines = this.chunk.split('\n');
+		if (/\r\n|\r|\n/.test(this.chunk)) {
+			const endsWithCarriageReturn = hasMoreData && this.chunk.endsWith('\r');
+			const data = endsWithCarriageReturn ? this.chunk.slice(0, -1) : this.chunk;
+			const endsWithSeparator = /(?:\r\n|\r|\n)$/.test(this.chunk);
 
-			// If there is still more data to read, save the last line, as it may be incomplete
-			if (this.hasMoreData()) this.chunk = this.lines.pop() ?? '';
+			this.lines = data.split(/\r\n|\r|\n/);
+			if (hasMoreData) {
+				this.chunk = `${this.lines.pop() ?? ''}${endsWithCarriageReturn ? '\r' : ''}`;
+			} else {
+				this.chunk = '';
+				if (endsWithSeparator) this.lines.pop();
+			}
 
-			// Start stepping through each line
 			this.step();
 			return;
 		}
+
 		// If the text did not contain a newline character,
 		// start another round of the read process if there is still data to read
 		if (this.hasMoreData()) return this.read();
@@ -113,12 +147,14 @@ export class LineReader {
 	 * Read a single chunk
 	 */
 	private read(): void {
+		if (!this.reading) return;
+
 		// Extract section of file for reading
 		const blob: Blob = this.file.slice(this.readPosition, this.readPosition + LineReader.chunkSize);
 		// Update current read position
-		this.readPosition += LineReader.chunkSize;
+		this.readPosition += blob.size;
 		// Read the blob as text
-		this.fileReader.readAsText(blob, this.options.encoding);
+		this.fileReader.readAsArrayBuffer(blob);
 	}
 
 	/**
@@ -143,7 +179,7 @@ export class LineReader {
 	 * @returns {boolean}
 	 */
 	private hasMoreData(): boolean {
-		return this.readPosition <= this.file.size;
+		return this.readPosition < this.file.size;
 	}
 
 	/**

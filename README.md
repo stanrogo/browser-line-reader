@@ -82,26 +82,40 @@ lineReader.readNLines(10, (line: string) => {
 
 ## Missing Features
 
-- Support for different kinds of line separators
 - Support for separate read header action
-- Efficiency optimisationss
+- Efficiency optimisations
 - Benchmarking against standard FileReader API
-- Add contributing guidelines
 
 Please suggest or implement these or any other features you feel are missing.
+
+## Contributing
+
+1. Create a feature branch from the latest `master` and install the locked dependencies:
+
+```sh
+git switch master
+git pull --ff-only
+git switch -c feature/your-change
+npm ci
+```
+
+2. Make the smallest focused change and add or update tests in `tests/`.
+
+3. Run the local checks before opening a pull request:
+
+```sh
+npx eslint src tests
+npx prettier --check "src/**/*.ts" tests/index.spec.ts
+npm test -- --runInBand
+npm run build
+npm pack --dry-run
+```
+
+Prettier is used for formatting. Run `npx prettier --write "src/**/*.ts" tests/index.spec.ts` to format authored files locally. The pre-commit hook runs `lint-staged` for staged JavaScript and TypeScript files, which runs ESLint and Prettier automatically. Open a pull request into `master`.
 
 ## Publishing a release
 
 The publish workflow publishes to npm and creates a GitHub release whenever a version tag is pushed. It uses npm trusted publishing, so no long-lived npm token is stored in GitHub.
-
-Before the first release, open the package's **Settings** page on npmjs.com, select **Trusted Publisher**, choose **GitHub Actions**, and enter:
-
-- Organization or user: `stanrogo`
-- Repository: `browser-line-reader`
-- Workflow filename: `publish.yml`
-- Environment: leave blank
-
-Allow `npm stage publish` for this trusted publisher, but do not allow direct `npm publish`. The workflow's `id-token: write` permission lets npm authenticate it with a short-lived GitHub OIDC credential.
 
 1. Update the version, commit the generated package metadata, and create a matching tag:
 
